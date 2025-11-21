@@ -1,113 +1,349 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FF ID Store</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background-color: #1a202c; color: white; }
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); }
-        .modal-content { background-color: #2d3748; margin: 5% auto; padding: 20px; border: 1px solid #4a5568; width: 95%; max-width: 600px; border-radius: 8px; }
-        .hidden { display: none; }
-        .account-card { cursor: pointer; transition: transform 0.2s; }
-        .account-card:hover { transform: translateY(-5px); }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FF ID Store — Liquid Glass</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{
+      --bg1:#061221;
+      --bg2:#071426;
+      --accent1:#7EE7F7;
+      --accent2:#9B8CFF;
+      --glass-border: rgba(255,255,255,0.12);
+      --glass-surface: rgba(255,255,255,0.04);
+      --muted: rgba(230,238,248,0.7);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background:
+        radial-gradient(800px 400px at 10% 10%, rgba(123,97,255,0.06), transparent 8%),
+        radial-gradient(700px 350px at 90% 90%, rgba(0,240,255,0.04), transparent 8%),
+        linear-gradient(180deg,var(--bg1),var(--bg2));
+      color:#e6eef8;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      min-height:100vh;
+      padding:36px;
+    }
+
+    /* Animated background blobs */
+    .bg-blobs{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden}
+    .blob{position:absolute; filter: blur(80px) saturate(120%); opacity:0.7; mix-blend-mode:screen; will-change:transform,opacity}
+    .blob.b1{width:540px;height:540px; left:-8%; top:-12%; background:linear-gradient(45deg,var(--accent1),#5EE3B3); animation:float1 12s ease-in-out infinite}
+    .blob.b2{width:520px;height:520px; right:-14%; bottom:-6%; background:linear-gradient(45deg,var(--accent2),#FF9AA2); animation:float2 15s ease-in-out infinite}
+    .blob.b3{width:380px;height:380px; left:62%; top:8%; background:linear-gradient(135deg,#7EE7F7,#9B8CFF); animation:float3 18s ease-in-out infinite}
+    @keyframes float1{0%{transform:translateY(0) scale(1)}50%{transform:translateY(48px) scale(1.06)}100%{transform:translateY(0) scale(1)}}
+    @keyframes float2{0%{transform:translateY(0) scale(1)}50%{transform:translateY(-32px) scale(1.04)}100%{transform:translateY(0) scale(1)}}
+    @keyframes float3{0%{transform:translateY(0) scale(1)}50%{transform:translateY(22px) scale(1.05)}100%{transform:translateY(0) scale(1)}}
+
+    /* Layout */
+    .container{
+      position:relative;
+      z-index:1;
+      max-width:1200px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns: 1fr 420px;
+      gap:28px;
+      align-items:start;
+    }
+
+    /* Liquid glass card base */
+    .glass {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+      border: 1px solid var(--glass-border);
+      border-radius:16px;
+      padding:20px;
+      backdrop-filter: blur(10px) saturate(120%);
+      -webkit-backdrop-filter: blur(10px) saturate(120%);
+      box-shadow: 0 10px 30px rgba(2,6,23,0.55);
+    }
+
+    /* AUTH (left) */
+    #auth-section{
+      margin-top:10px;
+      max-width:720px;
+    }
+    #auth-section h2{font-size:22px; margin-bottom:12px}
+    label{color:var(--muted); font-size:14px}
+    input[type="email"], input[type="password"], input[type="text"], input[type="number"]{
+      width:100%;
+      padding:12px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.02);
+      color:inherit;
+      outline: none;
+      margin-top:6px;
+    }
+    input::placeholder{color: rgba(230,238,248,0.5)}
+    .flex.gap-4 button{
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .flex.gap-4 button:active{transform:translateY(1px)}
+
+    /* Header (app) */
+    header.appbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:14px 18px;
+      border-radius:12px;
+      margin-bottom:12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.04);
+      backdrop-filter: blur(6px);
+    }
+    header.appbar h1{font-size:18px}
+    header.appbar p{color:var(--muted); margin-top:2px; font-size:13px}
+
+    /* Accounts grid */
+    #accounts-container{
+      display:grid;
+      grid-template-columns: repeat(1,1fr);
+      gap:18px;
+      margin-top:6px;
+    }
+    @media(min-width:640px){
+      #accounts-container{grid-template-columns: repeat(2,1fr)}
+    }
+    @media(min-width:900px){
+      #accounts-container{grid-template-columns: repeat(3,1fr)}
+    }
+
+    .account-card{
+      border-radius:12px;
+      overflow:hidden;
+      cursor:pointer;
+      transition: transform .16s ease, box-shadow .16s ease;
+      border: 1px solid rgba(255,255,255,0.04);
+      background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.006));
+      box-shadow: 0 6px 18px rgba(2,6,23,0.45);
+      display:flex;
+      flex-direction:column;
+    }
+    .account-card:hover{ transform: translateY(-8px); box-shadow:0 14px 40px rgba(2,6,23,0.6) }
+    .account-card img{width:100%; height:160px; object-fit:cover; display:block}
+    .account-card .p-4{padding:12px}
+
+    /* Modal style (liquid glass) */
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(4,8,14,0.6); display:flex; align-items:center; justify-content:center; padding:24px; }
+    .modal-content {
+      width:100%;
+      max-width:720px;
+      border-radius:14px;
+      padding:20px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 30px 80px rgba(4,8,20,0.7);
+      backdrop-filter: blur(12px) saturate(120%);
+      -webkit-backdrop-filter: blur(12px) saturate(120%);
+      animation:pop .14s ease;
+    }
+    @keyframes pop{from{transform:translateY(6px) scale(.998); opacity:0} to {transform:none; opacity:1}}
+
+    .modal .close-x{
+      position:absolute; right:22px; top:18px; background:transparent; border:0; color:var(--muted); font-size:18px; cursor:pointer;
+    }
+
+    /* Buttons */
+    .btn {
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:700; border:0;
+      box-shadow: 0 6px 20px rgba(2,6,23,0.45);
+    }
+    .btn.primary{ background: linear-gradient(90deg,var(--accent1),var(--accent2)); color:#041018; }
+    .btn.ghost{ background:transparent; border:1px solid rgba(255,255,255,0.06); color:inherit }
+
+    /* small utilities */
+    .muted{ color:var(--muted) }
+    .title-lg { font-size:22px; font-weight:700; margin-bottom:6px }
+    .desc { color: rgba(230,238,248,0.78); white-space:pre-wrap }
+
+    /* responsive container */
+    @media (max-width:980px){
+      .container{ grid-template-columns: 1fr; padding:0 8px }
+      aside{ order:-1 }
+      .modal-content{ max-width: 95% }
+    }
+  </style>
 </head>
 <body>
 
-    <div id="auth-section" class="max-w-md mx-auto mt-10 p-6 bg-gray-800 rounded-lg">
-        <h2 class="text-2xl font-bold text-center mb-6">Login or Register</h2>
-        <div class="mb-4">
-        
-            <label for="email" class="block mb-2">Email:</label>
-            <input type="email" id="email" class="w-full p-2 rounded bg-gray-700 border border-gray-600">
-        </div>
-        <div class="mb-6">
-            <label for="password" class="block mb-2">Password:</label>
-            <input type="password" id="password" class="w-full p-2 rounded bg-gray-700 border border-gray-600">
-        </div>
-        <div class="flex gap-4">
-            <button id="login-btn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Login</button>
-            <button id="register-btn" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Register</button>
-        </div>
-    </div>
+  <!-- animated blobs -->
+  <div class="bg-blobs" aria-hidden="true">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
 
-    <div id="app-section" class="hidden">
-        <header class="bg-gray-800 p-4 flex justify-between items-center sticky top-0 z-50">
-            <div>
-                <h1 class="text-xl font-bold">FRAZOR GAME STORE</h1>
-                <p id="user-email" class="text-sm text-gray-400"></p>
-            </div>
-            <div>
-                <span class="font-bold">Wallet: ₹<span id="wallet-balance">0</span></span>
-                <button id="deposit-btn" class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-1 px-3 rounded ml-4">Deposit</button>
-                <button id="logout-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded ml-2">Logout</button>
-            </div>
+  <div class="container">
+    <!-- LEFT: AUTH / MAIN -->
+    <main>
+      <div id="auth-section" class="glass">
+          <h2 class="title-lg text-center">Login or Register</h2>
+          <div class="mb-4">
+              <label for="email" class="block mb-2">Email:</label>
+              <input type="email" id="email" class="" placeholder="you@example.com">
+          </div>
+          <div class="mb-6">
+              <label for="password" class="block mb-2">Password:</label>
+              <input type="password" id="password" class="" placeholder="••••••">
+          </div>
+          <div class="flex gap-4">
+              <button id="login-btn" class="flex-1 btn primary">Login</button>
+              <button id="register-btn" class="flex-1 btn ghost">Register</button>
+          </div>
+      </div>
+
+      <!-- Accounts grid (will be populated by Firebase) -->
+      <div id="app-section" class="hidden" style="margin-top:18px;">
+        <header class="appbar glass">
+          <div>
+            <h1 class="title-lg">FRAZOR GAME STORE</h1>
+            <p id="user-email" class="muted"></p>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="muted" style="font-weight:800">Wallet: ₹<span id="wallet-balance">0</span></div>
+            <button id="deposit-btn" class="btn ghost">Deposit</button>
+            <button id="logout-btn" class="btn" style="background:linear-gradient(90deg,#FF8A8A,#FFB86B); color:#041018">Logout</button>
+          </div>
         </header>
 
-        <main id="accounts-container" class="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        </main>
-    </div>
+        <main id="accounts-container" class="p-4"></main>
+      </div>
+    </main>
 
-    <div id="deposit-modal" class="modal">
-        <div class="modal-content">
-            <h3 class="text-2xl font-bold mb-4">Deposit Money</h3>
-            <p class="mb-4">Scan the QR code to pay. After paying, fill the details below.</p>
-            <img src="https://uploads.onecompiler.io/445apq2ce/445apnb6g/IMG-20251101-WA0001%5B1%5D.jpg" alt="QR Code" class="mx-auto mb-4 border-4 border-white">
-            <input type="text" id="payer-name" placeholder="Name you paid with" class="w-full p-2 mb-3 rounded bg-gray-700 border border-gray-600">
-            <input type="text" id="utr-id" placeholder="UTR/Transaction ID" class="w-full p-2 mb-3 rounded bg-gray-700 border border-gray-600">
-            <input type="number" id="deposit-amount" placeholder="Amount Paid" class="w-full p-2 mb-4 rounded bg-gray-700 border border-gray-600">
-            <button id="submit-deposit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Submit Request</button>
-            <button onclick="closeModal('deposit-modal')" class="w-full mt-2 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Close</button>
+    <!-- RIGHT: Sidebar -->
+    <aside class="glass" style="min-height:200px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
+        <div style="display:flex; gap:12px; align-items:center;">
+          <div style="width:56px; height:56px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:700; background:linear-gradient(135deg,var(--accent2),var(--accent1)); color:#041018">FG</div>
+          <div>
+            <div style="font-weight:800">FRAZOR</div>
+            <div class="muted" style="font-size:13px">Game Store</div>
+          </div>
         </div>
-    </div>
-
-    <div id="details-modal" class="modal">
-        <div class="modal-content">
-            <h3 id="modal-title" class="text-3xl font-bold mb-4"></h3>
-            <img id="modal-main-image" src="" alt="Main Account Image" class="w-full h-64 object-cover rounded-lg mb-4">
-            <h4 class="text-xl font-semibold mb-2">Description</h4>
-            <p id="modal-description" class="text-gray-300 mb-4 whitespace-pre-wrap"></p>
-             <h4 class="text-xl font-semibold mb-2">More Images</h4>
-            <div id="modal-other-images" class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-6">
-            </div>
-            <div id="modal-buttons" class="flex flex-col gap-2">
-            </div>
-            <button onclick="closeModal('details-modal')" class="w-full mt-4 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Close</button>
+        <div style="text-align:right" class="muted">
+          <div style="font-weight:800">$0</div>
+          <div style="font-size:12px">Demo</div>
         </div>
-    </div>
-    
-    <div id="credentials-modal" class="modal">
-        <div class="modal-content text-center">
-            <h3 class="text-2xl font-bold mb-4 text-green-400">🎉 Purchase Successful! 🎉</h3>
-            <p class="mb-2">Here are your account details:</p>
-            <div class="bg-gray-900 p-4 rounded text-left">
-                <p><strong>ID/Email:</strong> <span id="purchased-id"></span></p>
-                <p><strong>Password:</strong> <span id="purchased-pass"></span></p>
-            </div>
-            <button onclick="closeModal('credentials-modal')" class="w-full mt-4 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Close</button>
+      </div>
+
+      <div style="margin-top:6px;">
+        <div class="card glass" style="padding:12px; display:flex; gap:12px; align-items:center; margin-bottom:10px;">
+          <div style="width:44px; height:44px; border-radius:10px; background:linear-gradient(135deg,var(--accent1),var(--accent2));"></div>
+          <div>
+            <div style="font-weight:700">Frosted Panels</div>
+            <div class="muted" style="font-size:13px">Modern glass look</div>
+          </div>
         </div>
-        
+
+        <div class="cards" style="display:grid; grid-template-columns:repeat(2,1fr); gap:8px;">
+          <div class="card glass" style="padding:10px; display:flex; gap:10px; align-items:center;">
+            <div style="width:36px; height:36px; border-radius:8px; background:linear-gradient(135deg,#FF9AA2,#FFD97A)"></div>
+            <div>
+              <div style="font-weight:700">Blobs</div>
+              <div class="muted" style="font-size:12px">soft lights</div>
+            </div>
+          </div>
+          <div class="card glass" style="padding:10px; display:flex; gap:10px; align-items:center;">
+            <div style="width:36px; height:36px; border-radius:8px; background:linear-gradient(135deg,#7EE7F7,#B39BFF)"></div>
+            <div>
+              <div style="font-weight:700">Accessible</div>
+              <div class="muted" style="font-size:12px">High contrast</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px; display:flex; gap:8px;">
+          <button class="btn ghost" style="flex:1">Download</button>
+          <button class="btn primary" style="flex:1">Prototype</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- DEPOSIT MODAL -->
+  <div id="deposit-modal" class="modal" aria-hidden="true">
+    <div class="modal-content">
+      <button class="close-x" onclick="closeModal('deposit-modal')">✕</button>
+      <h3 class="title-lg">Deposit Money</h3>
+      <p class="muted">Scan the QR code to pay. After paying, fill the details below.</p>
+      <img src="https://uploads.onecompiler.io/445apq2ce/445apnb6g/IMG-20251101-WA0001%5B1%5D.jpg" alt="QR Code" class="w-full my-4" style="border-radius:10px; border:2px solid rgba(255,255,255,0.05)">
+      <input type="text" id="payer-name" placeholder="Name you paid with" class="mb-3">
+      <input type="text" id="utr-id" placeholder="UTR/Transaction ID" class="mb-3">
+      <input type="number" id="deposit-amount" placeholder="Amount Paid" class="mb-3">
+      <button id="submit-deposit-btn" class="btn primary w-full" style="margin-top:6px">Submit Request</button>
+      <button onclick="closeModal('deposit-modal')" class="btn ghost w-full" style="margin-top:8px">Close</button>
     </div>
-</div>  
-</div>
+  </div>
 
-<script>
-function closeModal(id) {
-    document.getElementById(id).style.display = "none";
-}
+  <!-- DETAILS MODAL -->
+  <div id="details-modal" class="modal" aria-hidden="true">
+    <div class="modal-content">
+      <button class="close-x" onclick="closeModal('details-modal')">✕</button>
+      <h3 id="modal-title" class="title-lg"></h3>
+      <img id="modal-main-image" src="" alt="Main Account Image" class="w-full my-3" style="height:280px; object-fit:cover; border-radius:10px; border:1px solid rgba(255,255,255,0.04)">
+      <h4 style="margin:0 0 8px">Description</h4>
+      <p id="modal-description" class="desc"></p>
 
-document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-        document.querySelectorAll(".modal").forEach(modal => {
-            modal.style.display = "none";
-        });
+      <h4 style="margin-top:12px">More Images</h4>
+      <div id="modal-other-images" class="grid grid-cols-2 sm:grid-cols-3 gap-2 my-3"></div>
+
+      <div id="modal-buttons" class="flex flex-col gap-2"></div>
+
+      <button onclick="closeModal('details-modal')" class="btn ghost w-full" style="margin-top:12px">Close</button>
+    </div>
+  </div>
+
+  <!-- CREDENTIALS MODAL -->
+  <div id="credentials-modal" class="modal" aria-hidden="true">
+    <div class="modal-content text-center">
+      <button class="close-x" onclick="closeModal('credentials-modal')">✕</button>
+      <h3 class="title-lg" style="color:#9ee6b8">🎉 Purchase Successful! 🎉</h3>
+      <p class="muted">Here are your account details:</p>
+      <div class="glass" style="margin-top:10px; padding:12px; text-align:left;">
+        <p><strong>ID/Email:</strong> <span id="purchased-id"></span></p>
+        <p><strong>Password:</strong> <span id="purchased-pass"></span></p>
+      </div>
+      <button onclick="closeModal('credentials-modal')" class="btn ghost w-full" style="margin-top:12px">Close</button>
+    </div>
+  </div>
+
+  <!-- Global close + ESC handler (kept global so HTML onclick works) -->
+  <script>
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.style.display = 'none';
     }
-});
-</script>
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        document.querySelectorAll(".modal").forEach(modal => {
+          modal.style.display = "none";
+        });
+      }
+    });
 
-<script type="module">
+    // close when clicking outside modal content
+    document.addEventListener('click', function(e){
+      document.querySelectorAll('.modal').forEach(modal=>{
+        if(modal.style.display === 'block' && !modal.querySelector('.modal-content').contains(e.target)){
+          modal.style.display = 'none';
+        }
+      });
+    });
+  </script>
+
+  <!-- FIREBASE + APP LOGIC (LEFT EXACTLY AS YOU HAD IT) -->
+  <script type="module">
         // 🔥 CORRECT FIREBASE CONFIG FOR FF ID STORE
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -263,17 +499,17 @@ document.addEventListener("keydown", (e) => {
 
         function createAccountCard(id, data) {
             const card = document.createElement('div');
-            card.className = 'bg-gray-800 rounded-lg overflow-hidden shadow-lg account-card';
+            card.className = 'account-card';
             card.dataset.id = id;
 
             const shortDescription = data.description.split('\n')[0].substring(0, 60) + '...';
 
             card.innerHTML = `
-                <img class="w-full h-48 object-cover" src="${data.mainImage}" alt="${data.name}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
-                <div class="p-4">
-                    <h3 class="font-bold text-xl mb-2">${data.name}</h3>
-                    <p class="text-gray-400 text-sm">${shortDescription}</p>
-                    <p class="text-green-400 font-bold mt-2">₹${data.price}</p>
+                <img src="${data.mainImage}" alt="${data.name}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                <div style="padding:12px">
+                    <h3 style="font-weight:700; margin-bottom:6px">${data.name}</h3>
+                    <p style="color:rgba(230,238,248,0.7); font-size:13px">${shortDescription}</p>
+                    <p style="color:#9ee6b8; font-weight:800; margin-top:8px">₹${data.price}</p>
                 </div>
             `;
             return card;
