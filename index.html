@@ -87,9 +87,26 @@
             </div>
             <button onclick="closeModal('credentials-modal')" class="w-full mt-4 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Close</button>
         </div>
+        
     </div>
+</div>  
+</div>
 
-    <script type="module">
+<script>
+function closeModal(id) {
+    document.getElementById(id).style.display = "none";
+}
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        document.querySelectorAll(".modal").forEach(modal => {
+            modal.style.display = "none";
+        });
+    }
+});
+</script>
+
+<script type="module">
         // 🔥 CORRECT FIREBASE CONFIG FOR FF ID STORE
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -377,3 +394,4 @@
     </script>
 </body>
 </html>
+
