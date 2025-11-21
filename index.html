@@ -59,20 +59,7 @@
             <input type="text" id="utr-id" placeholder="UTR ID" class="w-full p-2 mb-3 rounded bg-gray-700 border border-gray-600">
             <input type="number" id="deposit-amount" placeholder="Amount" class="w-full p-2 mb-4 rounded bg-gray-700 border border-gray-600">
             <button id="submit-deposit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Submit</button>
-            <button onclick="closeModal('deposit-modal')" class="w-full mt-2 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Close</button>
-        </div>
-    </div> 
-    
-const firebaseConfig = {
-  apiKey: "AIzaSyCmeoKy9MKYkOjifIxmu4I-wtog8SkC7ps",
-  authDomain: "free-fire-id-store-app-test.firebaseapp.com",
-  databaseURL: "https://free-fire-id-store-app-test-default-rtdb.firebaseio.com",
-  projectId: "free-fire-id-store-app-test",
-  storageBucket: "free-fire-id-store-app-test.firebasestorage.app",
-  messagingSenderId: "945441219174",
-  appId: "1:945441219174:web:690a858cad1c5fd9cf83a7",
-  measurementId: "G-3HRF5G0PN8"
-};
+            <button onclick="closeModal('deposit-modal')" class="w-full mt-2 bg-gray-600 hover:bg-gray-700 text-white font-bol
     <!-- DETAILS MODAL -->
     <div id="details-modal" class="modal">
         <div class="modal-content">
@@ -88,7 +75,23 @@ const firebaseConfig = {
             <button onclick="closeModal('details-modal')" class="w-full mt-4 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Close</button>
         </div>
     </div>
+        
+<script type="module">
+        // 🔥 CORRECT FIREBASE CONFIG FOR FF ID STORE
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getDatabase, ref, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+        const firebaseConfig = {
+  apiKey: "AIzaSyCmeoKy9MKYkOjifIxmu4I-wtog8SkC7ps",
+  authDomain: "free-fire-id-store-app-test.firebaseapp.com",
+  databaseURL: "https://free-fire-id-store-app-test-default-rtdb.firebaseio.com",
+  projectId: "free-fire-id-store-app-test",
+  storageBucket: "free-fire-id-store-app-test.firebasestorage.app",
+  messagingSenderId: "945441219174",
+  appId: "1:945441219174:web:690a858cad1c5fd9cf83a7",
+  measurementId: "G-3HRF5G0PN8"
+};
     <!-- CREDENTIALS MODAL -->
     <div id="credentials-modal" class="modal">
         <div class="modal-content text-center">
